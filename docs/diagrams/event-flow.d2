@@ -1,0 +1,88 @@
+# イベントの流れ
+# 発行されたイベントに対して、どのサービスが動くか
+
+direction: right
+
+classes: {
+  event: {
+    shape: rectangle
+    style: {
+      fill: "#fff8e1"
+      stroke: "#f9a825"
+      stroke-width: 2
+      border-radius: 6
+      font-size: 15
+    }
+  }
+  service: {
+    shape: rectangle
+    style: {
+      fill: "#e8f5e9"
+      stroke: "#43a047"
+      stroke-width: 2
+      border-radius: 20
+      font-size: 15
+      bold: true
+    }
+  }
+  chain: {
+    style: {
+      stroke: "#e64a19"
+      stroke-width: 2
+      font-size: 13
+    }
+  }
+  terminal: {
+    style: {
+      stroke: "#b0bec5"
+      stroke-width: 1
+    }
+  }
+}
+
+# ---- イベント（2行目は「誰が発行したか」）----
+published: StudySessionPublished\n主催者が公開した {class: event}
+session_cancelled: StudySessionCancelled\n主催者が中止した {class: event}
+confirmed: ReservationConfirmed\n申込 または 補欠の繰り上げ が発行 {class: event}
+waitlisted: WaitlistEntryAdded\n満席の枠に申し込んだ {class: event}
+res_cancelled: ReservationCancelled\n参加者がキャンセルした {class: event}
+seat_released: SeatReleased\n席の解放 が発行（原因は問わない） {class: event}
+promoted: WaitlistPromoted\n補欠の繰り上げ が発行 {class: event}
+reminder_due: ReminderDue\n送信時刻になった {class: event}
+
+# ---- 動くサービス ----
+bulk_cancel: 申込の一括キャンセル {class: service}
+seat_release_svc: 席の解放 {class: service}
+promotion: 補欠の繰り上げ {class: service}
+notification: 通知 {class: service}
+listing: 勉強会の一覧・検索 {class: service}
+
+# ---- 動いた先で次のイベントを生む経路 ----
+session_cancelled -> bulk_cancel: {class: chain}
+res_cancelled -> seat_release_svc: 参加確定者のときだけ {class: chain}
+seat_released -> promotion: {class: chain}
+
+# ---- そこで終わる経路 ----
+published -> listing: {class: terminal}
+session_cancelled -> notification: {class: terminal}
+confirmed -> notification: {class: terminal}
+confirmed -> listing: {class: terminal}
+waitlisted -> notification: {class: terminal}
+waitlisted -> listing: {class: terminal}
+res_cancelled -> notification: {class: terminal}
+res_cancelled -> listing: {class: terminal}
+promoted -> notification: {class: terminal}
+promoted -> listing: {class: terminal}
+reminder_due -> notification: {class: terminal}
+
+# ---- 凡例 ----
+legend: 赤い線 → 動いた先が次のイベントを発行し、流れが続く\n灰色の線 → そこで終わる（通知・画面の更新） {
+  style: {
+    fill: "#fafafa"
+    stroke: "#9e9e9e"
+    stroke-dash: 4
+    border-radius: 10
+    font-size: 13
+    italic: true
+  }
+}

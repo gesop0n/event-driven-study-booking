@@ -1,0 +1,92 @@
+# 勉強会 (StudySession) の状態遷移
+# 永続化するのは Draft / Published / Cancelled の3状態のみ
+
+direction: down
+
+classes: {
+  state: {
+    shape: rectangle
+    style: {
+      border-radius: 20
+      stroke-width: 2
+      font-size: 18
+      bold: true
+    }
+  }
+  start: {
+    shape: circle
+    width: 26
+    height: 26
+    label: ""
+    style: {
+      fill: "#37474f"
+      stroke: "#37474f"
+    }
+  }
+}
+
+begin: {class: start}
+
+draft: Draft {
+  class: state
+  style: {
+    fill: "#eceff1"
+    stroke: "#78909c"
+  }
+}
+
+published: Published {
+  class: state
+  style: {
+    fill: "#e8f5e9"
+    stroke: "#43a047"
+  }
+}
+
+cancelled: Cancelled {
+  class: state
+  style: {
+    fill: "#fbe9e7"
+    stroke: "#e64a19"
+  }
+}
+
+derived: 募集終了 / 開催済み\n（状態として持たず時刻から導出する） {
+  style: {
+    fill: "#fafafa"
+    stroke: "#9e9e9e"
+    stroke-dash: 4
+    border-radius: 10
+    font-size: 14
+    italic: true
+  }
+}
+
+begin -> draft: 主催者が作成 {
+  style.font-size: 14
+}
+
+draft -> published: 公開する\n→ StudySessionPublished {
+  style: {
+    stroke: "#43a047"
+    stroke-width: 2
+    font-size: 14
+  }
+}
+
+published -> cancelled: 中止する\n→ StudySessionCancelled\n（申込を一括 Cancelled / 繰り上げなし） {
+  style: {
+    stroke: "#e64a19"
+    stroke-width: 2
+    font-size: 14
+  }
+}
+
+published -> derived: 時刻の経過で\n見え方だけが変わる {
+  style: {
+    stroke: "#9e9e9e"
+    stroke-dash: 4
+    font-size: 13
+  }
+  target-arrowhead.shape: none
+}

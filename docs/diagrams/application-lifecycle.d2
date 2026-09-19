@@ -1,0 +1,126 @@
+# 申込 (Application) の状態遷移
+# 破線 = SeatReleased を発行しない遷移（繰り上げを起動しない）
+
+direction: down
+
+classes: {
+  state: {
+    shape: rectangle
+    style: {
+      border-radius: 20
+      stroke-width: 2
+      font-size: 18
+      bold: true
+    }
+  }
+  start: {
+    shape: circle
+    width: 26
+    height: 26
+    label: ""
+    style: {
+      fill: "#37474f"
+      stroke: "#37474f"
+    }
+  }
+  release: {
+    style: {
+      stroke: "#e64a19"
+      stroke-width: 2
+      font-size: 14
+    }
+  }
+  no-release: {
+    style: {
+      stroke: "#90a4ae"
+      stroke-width: 2
+      stroke-dash: 4
+      font-size: 14
+    }
+  }
+}
+
+begin: {class: start}
+
+confirmed: Confirmed {
+  class: state
+  style: {
+    fill: "#e8f5e9"
+    stroke: "#43a047"
+  }
+}
+
+waitlisted: Waitlisted {
+  class: state
+  style: {
+    fill: "#fff8e1"
+    stroke: "#f9a825"
+  }
+}
+
+cancelled: Cancelled {
+  class: state
+  style: {
+    fill: "#eceff1"
+    stroke: "#78909c"
+  }
+}
+
+legend: Cancelled への遷移\n実線 → SeatReleased を発行（補欠の繰り上げが走る）\n破線 → SeatReleased を発行しない {
+  style: {
+    fill: "#fafafa"
+    stroke: "#9e9e9e"
+    stroke-dash: 4
+    border-radius: 10
+    font-size: 13
+    italic: true
+  }
+}
+
+begin -> confirmed: 申し込む（空きあり）\n→ ReservationConfirmed {
+  style: {
+    stroke: "#43a047"
+    stroke-width: 2
+    font-size: 14
+  }
+}
+
+begin -> waitlisted: 申し込む（満席）\n→ WaitlistEntryAdded {
+  style: {
+    stroke: "#f9a825"
+    stroke-width: 2
+    font-size: 14
+  }
+}
+
+waitlisted -> confirmed: 繰り上げ（SeatReleased をきっかけに）\n→ WaitlistPromoted\n→ ReservationConfirmed {
+  style: {
+    stroke: "#43a047"
+    stroke-width: 2
+    font-size: 14
+  }
+}
+
+confirmed -> cancelled: キャンセル\n→ ReservationCancelled\n→ SeatReleased {
+  class: release
+}
+
+waitlisted -> cancelled: キャンセル\n→ ReservationCancelled {
+  class: no-release
+}
+
+confirmed -> cancelled: 勉強会の中止 {
+  class: no-release
+}
+
+waitlisted -> cancelled: 勉強会の中止 {
+  class: no-release
+}
+
+cancelled -> legend: {
+  style: {
+    stroke: transparent
+    stroke-width: 0
+  }
+  target-arrowhead.shape: none
+}
