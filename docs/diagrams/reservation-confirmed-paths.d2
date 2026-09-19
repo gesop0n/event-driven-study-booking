@@ -1,0 +1,126 @@
+# ReservationConfirmed に届く2つの経路
+# 経路②は購読者（補欠の繰り上げ）が発行するため、流れが一巡して戻ってくる
+
+direction: down
+
+classes: {
+  action: {
+    shape: rectangle
+    style: {
+      fill: "#eceff1"
+      stroke: "#78909c"
+      stroke-width: 2
+      border-radius: 6
+      font-size: 14
+    }
+  }
+  event: {
+    shape: rectangle
+    style: {
+      fill: "#fff8e1"
+      stroke: "#f9a825"
+      stroke-width: 2
+      border-radius: 6
+      font-size: 15
+    }
+  }
+  hub: {
+    shape: rectangle
+    style: {
+      fill: "#fff8e1"
+      stroke: "#f9a825"
+      stroke-width: 3
+      border-radius: 6
+      font-size: 16
+      bold: true
+    }
+  }
+  service: {
+    shape: rectangle
+    style: {
+      fill: "#e8f5e9"
+      stroke: "#43a047"
+      stroke-width: 2
+      border-radius: 20
+      font-size: 15
+      bold: true
+    }
+  }
+  direct: {
+    style: {
+      stroke: "#43a047"
+      stroke-width: 2
+      font-size: 13
+    }
+  }
+  loop: {
+    style: {
+      stroke: "#e64a19"
+      stroke-width: 3
+      font-size: 13
+    }
+  }
+  chain: {
+    style: {
+      stroke: "#e64a19"
+      stroke-width: 2
+      font-size: 13
+    }
+  }
+  note: {
+    style: {
+      fill: "#fafafa"
+      stroke: "#9e9e9e"
+      stroke-dash: 4
+      border-radius: 10
+      font-size: 13
+      italic: true
+    }
+  }
+}
+
+# ---- 経路①：参加者の操作から直接届く ----
+apply: 参加者が申し込む（空きあり） {class: action}
+
+# ---- 合流点 ----
+confirmed: ReservationConfirmed\nreason: first_come | waitlist_promoted {class: hub}
+
+subscribers: ReservationConfirmed の購読者\n・通知 → reason で文面を分岐\n・勉強会の一覧・検索 → reason を無視 {class: service}
+
+# ---- 経路②：一巡して戻ってくる側 ----
+cancel: 参加確定者がキャンセルする {class: action}
+res_cancelled: ReservationCancelled {class: event}
+seat_released: SeatReleased {class: event}
+promotion: 補欠の繰り上げ（購読者）\nWaitlistPromoted も同時に発行 {class: service}
+
+note: 経路②は購読者（補欠の繰り上げ）が発行したイベント。\n同じ ReservationConfirmed が別の入口から戻ってくるので、\n購読者は reason だけを見れば両方を同じように扱える。 {class: note}
+
+apply -> confirmed: 経路①：申込から直接\nreason = first_come {class: direct}
+
+confirmed -> subscribers: {
+  style: {
+    stroke: "#b0bec5"
+    stroke-width: 1
+  }
+}
+
+confirmed -> cancel: あとでキャンセルされる {
+  style: {
+    stroke: "#90a4ae"
+    stroke-width: 2
+    stroke-dash: 4
+    font-size: 13
+  }
+}
+cancel -> res_cancelled: {class: chain}
+res_cancelled -> seat_released: 席の解放 が発行 {class: chain}
+seat_released -> promotion: {class: chain}
+promotion -> confirmed: 経路②：補欠の繰り上げから\nreason = waitlist_promoted {class: loop}
+
+promotion -> note: {
+  style: {
+    stroke: transparent
+    stroke-width: 0
+  }
+  target-arrowhead.shape: none
+}
